@@ -10,7 +10,6 @@
 
 
 struct InputCommand voicer = {
-     .commandName = COMMANDNAME,
      .deviceName = VOICER_DEVICE_NAME,
      .boad = VOICER_DEVICE_BOAD,
      .command = '\0',
@@ -43,6 +42,7 @@ int voiceGetCommand(struct InputCommand *voicer)
     nread = read(voicer->fd, buf, sizeof(buf));
     if(nread <= 0)
         return -1;
+    printf("get buf: %s\n", buf);
     
     if(split_string(buf, voicer->commandName, voicer->command, '-') < 0){
 		printf("split_string error\n");

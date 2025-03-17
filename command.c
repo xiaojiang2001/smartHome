@@ -11,7 +11,7 @@ struct InputCommand* findCommandByNanme(struct InputCommand* head, char * name)
     struct InputCommand* temp = head;
     while (temp)
     {
-        if(strcmp(temp->commandName, name) == 0)
+        if(strcmp(temp->deviceName, name) == 0)
             return temp;
         temp = temp->next;
     }

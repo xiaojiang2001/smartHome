@@ -13,8 +13,10 @@
 #include "voiceControl.h"       // 指令来源1
 #include "socketControl.h"      // 指令来源2
 
+
 struct Device* pdeviceHead = NULL;
 struct InputCommand* pCommandHead = NULL;
+
 
 // 负责接收客户端消息
 void *read_thread(void* datas)
@@ -35,8 +37,11 @@ void *read_thread(void* datas)
 
         //通过名称找设备，设备名称存device
         device = findDeviceByNanme(pdeviceHead, socketHandler->commandName);
-        if(device != NULL) {
-            device->init();
+        if(device != NULL) 
+        {
+            printf("len: %d, command:%s\n", strlen(socketHandler->command), socketHandler->command);
+
+
             if(strcmp(socketHandler->command, "open") == 0)
                 device->open();
             else if(strcmp(socketHandler->command, "close") == 0)
@@ -61,7 +66,7 @@ void* socket_thread(void* data)
     memset(&c_addr, 0 , clen);
     
     // 通过指令名称找指令句柄
-    socketHandler = findCommandByNanme(pCommandHead, "socketServer");
+    socketHandler = findCommandByNanme(pCommandHead, SOCKET_DEVICE_NAME);
     if(socketHandler == NULL){
         printf("socketHandler is null\n");
         pthread_exit(NULL);
@@ -71,7 +76,7 @@ void* socket_thread(void* data)
         printf("socket_thread: %s init error\n", socketHandler->commandName);
         pthread_exit(NULL);
     }
-    printf("%s init success\n", socketHandler->commandName);
+    printf("%s init success\n", socketHandler->deviceName);
 
     pthread_t readThread;
 
@@ -80,6 +85,7 @@ void* socket_thread(void* data)
         // 收到一个客户端连接，创建一个客户端线程
         int c_fd = accept(socketHandler->fd, (struct sockaddr *)&c_addr, &clen);
         socketHandler->c_fd = c_fd;
+        printf("new client connect: c_fd = %d\n", c_fd);
         pthread_create(&readThread, NULL, read_thread, (void *)socketHandler);
     }
 }
@@ -89,7 +95,7 @@ void* voice_thread(void* data)
     int nread = 0;
 
     // 指令工厂中的指令  找到对应的指令类型
-    struct InputCommand *voiceHandler = findCommandByNanme(pCommandHead, "voice"); 
+    struct InputCommand *voiceHandler = findCommandByNanme(pCommandHead, VOICER_DEVICE_NAME); 
     if(voiceHandler == NULL){
         printf("voiceHandler is null\n");
         return NULL;
@@ -99,7 +105,7 @@ void* voice_thread(void* data)
         printf("voice_thread: voice_init error\n");
         pthread_exit(NULL);
     }
-    printf("%s init success\n", voiceHandler->commandName);
+    printf("%s init success\n", voiceHandler->deviceName);
 
     //测试发送数据
     char send_buf[128] = "test send data";
@@ -157,23 +163,23 @@ int main()
     pthread_create(&socketThread, NULL, socket_thread, NULL);
     pthread_create(&voiceThread,  NULL, voice_thread,  NULL);
 
-    // 去设备工厂找设备，返回设备节点
-    struct Device* device = findDeviceByNanme(pdeviceHead, deviceName);
-    if(device == NULL){
-        printf("not find\n");
-        return 0;
-    }
+    // // 去设备工厂找设备，返回设备节点
+    // struct Device* device = findDeviceByNanme(pdeviceHead, deviceName);
+    // if(device == NULL){
+    //     printf("not find\n");
+    //     return 0;
+    // }
 
-    int cmd = 0;
-    while (1)
-    {
-        printf("please input:");
-        scanf("%d",&cmd);
-        if(1 == cmd)
-            device->open();
-        else if(0 == cmd)
-            device->close();
-    }
+    // int cmd = 0;
+    // while (1)
+    // {
+    //     printf("please input:");
+    //     scanf("%d",&cmd);
+    //     if(1 == cmd)
+    //         device->open();
+    //     else if(0 == cmd)
+    //         device->close();
+    // }
 
     pthread_join(socketThread, NULL);
     pthread_join(voiceThread, NULL);

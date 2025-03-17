@@ -8,8 +8,8 @@ struct InputCommand
 {
     int fd;                 // 服务器/普通文件描述符
     int c_fd;               // 客户端文件描述符
-    char commandName[32];  // 指令名称
-    char deviceName[32];   // 硬件设备名称
+    char commandName[32];   // 指令名称
+    char deviceName[32];    // 设备名称
     int boad;               // 硬件波特率
     char command[32];       // 指令内容
     char log[1024];         // 日志

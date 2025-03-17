@@ -10,13 +10,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-// // 服务器初始化
-// int socketInit(struct InputCommand *socketMes);
-// // 获取指令
-// int socketGetCommand(struct InputCommand *socketMes);
 
 struct InputCommand socketContrl = {
-	.commandName = COMMAND_NAME,
+	.deviceName = SOCKET_DEVICE_NAME,
 	.command = '\0',
 	.ipAddr = SOCKET_IP_ADDR,
 	.port = SOCKET_IP_PORT,
@@ -35,8 +31,7 @@ int socketInit(struct InputCommand *socketMes)
 		return -1;
 	}
 
-
-	 //设置套接字属性 允许地址重用
+	//设置套接字属性 允许地址重用
     int optval = 1;
     socklen_t optlen = sizeof(optval);
     setsockopt(s_fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen);
@@ -58,26 +53,24 @@ int socketInit(struct InputCommand *socketMes)
 		perror("bind");
 		return -1;
 	}
-
-	printf("socket Server listening ...\n");
+	
 	socketMes->fd = s_fd;
-
 	return s_fd;
 }
-
 
 int socketGetCommand(struct InputCommand *socketMes)
 {
 	int nread = 0;
-	char buf[128] = {'\0'};
+	char buf[64] = {'\0'};
 	memset(buf, '\0', sizeof(buf));
 	memset(socketMes->commandName, '\0', sizeof(socketMes->commandName));
 	memset(socketMes->command, '\0', sizeof(socketMes->command));
 
-
 	nread = read(socketMes->c_fd, buf, sizeof(buf));
 	if(nread <= 0)
 		return -1;
+
+	printf("get len:%d, buf:%s\n", strlen(buf), buf);
 	if(split_string(buf, socketMes->commandName, socketMes->command, '-') < 0){
 		printf("split_string error\n");
 		return -1;

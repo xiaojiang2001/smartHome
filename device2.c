@@ -38,6 +38,8 @@ int device2_init()
     // 其他初始化
     pinMode(device2.pinNum, OUTPUT);
 	digitalWrite(device2.pinNum, !device2.triggerMode);
+
+    printf("%s init success\n", device2.deviceName);
 }
 
 int device2_open()
