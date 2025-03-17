@@ -3,27 +3,51 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <wiringSerial.h>
 
 #include "devices.h"    // 设备工厂
 #include "command.h"    // 指令工厂
 #include "device1.h"    // 1号设备
 #include "device2.h"    // 2号设备
 #include "device3.h"    // 3号设备
-
-#include "voiceControl.h"   // 指令来源1
-#include "socketControl.h"   // 指令来源2
-
+#include "voiceControl.h"       // 指令来源1
+#include "socketControl.h"      // 指令来源2
 
 struct Device* pdeviceHead = NULL;
 struct InputCommand* pCommandHead = NULL;
 
+// 负责接收客户端消息
 void *read_thread(void* datas)
 {
-    while (1)
+    int nread;			// 读取到的字节数
+    struct InputCommand* socketHandler;
+    socketHandler  = (struct InputCommand*)datas;
+    struct Device* device = NULL;
+
+    char send_buf[128] = "test send data";
+    write(socketHandler->c_fd, send_buf, strlen(send_buf));  //测试发送数据
+    while(1)
     {
-        /* code */
-    }
-    
+		//接收，返回接收到的字节数放入n_read
+        nread = socketHandler->getCommand(socketHandler);
+        if(nread <= 0)
+            continue;
+
+        //通过名称找设备，设备名称存device
+        device = findDeviceByNanme(pdeviceHead, socketHandler->commandName);
+        if(device != NULL) {
+            device->init();
+            if(strcmp(socketHandler->command, "open") == 0)
+                device->open();
+            else if(strcmp(socketHandler->command, "close") == 0)
+                device->close();
+            else
+                printf("command not exist\n");
+        }
+        else
+            printf("device not exist\n");
+    }     
+    pthread_exit(NULL);
 }
 
 
@@ -36,6 +60,7 @@ void* socket_thread(void* data)
     int clen = sizeof(struct sockaddr_in);
     memset(&c_addr, 0 , clen);
     
+    // 通过指令名称找指令句柄
     socketHandler = findCommandByNanme(pCommandHead, "socketServer");
     if(socketHandler == NULL){
         printf("socketHandler is null\n");
@@ -52,36 +77,57 @@ void* socket_thread(void* data)
 
     while (1)
     {
-        // 收到一个客户端连接，创建线程
+        // 收到一个客户端连接，创建一个客户端线程
         int c_fd = accept(socketHandler->fd, (struct sockaddr *)&c_addr, &clen);
-        pthread_create(&readThread, NULL, read_thread, NULL);
+        socketHandler->c_fd = c_fd;
+        pthread_create(&readThread, NULL, read_thread, (void *)socketHandler);
     }
 }
 
 void* voice_thread(void* data)
 {
-    struct InputCommand *voiceHandler;
     int nread = 0;
-    // 找到对应的指令类型
-    voiceHandler = findCommandByNanme(pCommandHead, "voice");
+
+    // 指令工厂中的指令  找到对应的指令类型
+    struct InputCommand *voiceHandler = findCommandByNanme(pCommandHead, "voice"); 
     if(voiceHandler == NULL){
         printf("voiceHandler is null\n");
         return NULL;
     }
-
+    // 初始化指令
     if(voiceHandler -> init(voiceHandler) < 0) {
         printf("voice_thread: voice_init error\n");
         pthread_exit(NULL);
     }
     printf("%s init success\n", voiceHandler->commandName);
 
+    //测试发送数据
+    char send_buf[128] = "test send data";
+    write(voiceHandler->fd, send_buf, strlen(send_buf));  
+
+    struct Device *device = NULL;               // 设备工厂中的设备
     while (1)
     {
-       nread = voiceHandler->getCommand(voiceHandler); 
-       if(nread > 0)
-            printf("get commandtext from voice: %s\n", voiceHandler->command);
-        else
-            printf("no voice data! ! !\n");
+        while(serialDataAvail(voiceHandler->fd) != -1 ) //串口有数据
+        {
+            nread = voiceHandler->getCommand(voiceHandler);
+            if(nread <= 0)
+                continue;
+
+            //通过名称找设备，设备名称存入tmp
+            device = findDeviceByNanme(pdeviceHead, voiceHandler->commandName);
+            if(device != NULL) {
+                device->init();
+                if(strcmp(voiceHandler->command, "open") == 0)
+                    device->open();
+                else if(strcmp(voiceHandler->command, "close") == 0)
+                    device->close();
+                else
+                    printf("command not exist\n");
+            }
+            else
+                printf("device not exist\n");
+        }
     }
 }
 
@@ -99,8 +145,8 @@ int main()
     pdeviceHead = addDevice1ToDeviceLink(pdeviceHead);      // 将设备1加入设备工厂 链式存储 头插法
     pdeviceHead = addDevice2ToDeviceLink(pdeviceHead);      // 将设备2加入设备工厂 链式存储 头插法
     pdeviceHead = addDevice3ToDeviceLink(pdeviceHead);      // 将设备3加入设备工厂 链式存储 头插法
+
     // 指令工厂初始化
-    
     pCommandHead = addSocketContrlToInputCommandLink(pCommandHead); //指令控制1加入指令工厂 链式存储 头插法
     pCommandHead = addVoiceContrlToInputCommandLink(pCommandHead);  //指令控制2加入指令工厂 链式存储 头插法
     
@@ -119,8 +165,6 @@ int main()
     }
 
     int cmd = 0;
-    sleep(1);
-
     while (1)
     {
         printf("please input:");
@@ -130,7 +174,7 @@ int main()
         else if(0 == cmd)
             device->close();
     }
-    
+
     pthread_join(socketThread, NULL);
     pthread_join(voiceThread, NULL);
     return 0;

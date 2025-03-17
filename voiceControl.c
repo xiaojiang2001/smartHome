@@ -22,8 +22,9 @@ struct InputCommand voicer = {
 
 int voiceInit(struct InputCommand *voicer)
 {
-	int fd;
-	if(fd = serialOpen(voicer->deviceName, voicer->boad) == ERROR) {
+	int fd = 10;
+	fd = serialOpen(voicer->deviceName, voicer->boad);
+    if(fd < 0) {
         printf("voiceInit error!\n");
 		exit(-1);
 	}
@@ -34,17 +35,21 @@ int voiceInit(struct InputCommand *voicer)
 int voiceGetCommand(struct InputCommand *voicer)
 {
 	int nread = 0;
-	memset(voicer->command, '\0', sizeof(voicer->command));
+    char buf[32];
+	memset(buf, '\0', sizeof(buf));
+    memset(voicer->commandName, '\0', sizeof(voicer->command));
+    memset(voicer->command, '\0', sizeof(voicer->command));
 
-	nread = read(voicer->fd, voicer->command, sizeof(voicer->command));
-	if(nread == 0){
-        printf("uart for voice over time\n");
-        return 0;
-    }
-
+    nread = read(voicer->fd, buf, sizeof(buf));
+    if(nread <= 0)
+        return -1;
+    
+    if(split_string(buf, voicer->commandName, voicer->command, '-') < 0){
+		printf("split_string error\n");
+		return -1;
+	}
 	return nread;
 }
-
 
 struct InputCommand* addVoiceContrlToInputCommandLink(struct InputCommand *phead)
 {

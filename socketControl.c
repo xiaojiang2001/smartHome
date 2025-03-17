@@ -15,7 +15,6 @@
 // // 获取指令
 // int socketGetCommand(struct InputCommand *socketMes);
 
-
 struct InputCommand socketContrl = {
 	.commandName = COMMAND_NAME,
 	.command = '\0',
@@ -69,23 +68,21 @@ int socketInit(struct InputCommand *socketMes)
 
 int socketGetCommand(struct InputCommand *socketMes)
 {
-	int n_read = 0;
-	int c_fd;
-	struct sockaddr_in c_addr;
-	char msg[128];
-	memset(&c_addr, 0, sizeof(struct sockaddr_in));
-	int clen = sizeof(struct sockaddr_in);
+	int nread = 0;
+	char buf[128] = {'\0'};
+	memset(buf, '\0', sizeof(buf));
+	memset(socketMes->commandName, '\0', sizeof(socketMes->commandName));
+	memset(socketMes->command, '\0', sizeof(socketMes->command));
 
-	// 获取客户端信息
-	c_fd = accept(socketMes->fd, (struct sockaddr *)&c_addr, &clen);
-	n_read = read(c_fd, socketMes->command, sizeof(socketMes->command));
-	if(n_read > 0)
-		printf("\nget: %d\n", n_read);
-	else {
-		printf("client quit\n");
+
+	nread = read(socketMes->c_fd, buf, sizeof(buf));
+	if(nread <= 0)
+		return -1;
+	if(split_string(buf, socketMes->commandName, socketMes->command, '-') < 0){
+		printf("split_string error\n");
+		return -1;
 	}
-
-	return n_read;
+	return nread;
 }
 
 // 添加设备到工厂链表
@@ -97,3 +94,4 @@ struct InputCommand* addSocketContrlToInputCommandLink(struct InputCommand *phea
 	socketContrl.next = phead;
 	return &socketContrl;
 }
+

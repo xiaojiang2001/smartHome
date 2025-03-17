@@ -18,6 +18,7 @@
         "inet.h": "c",
         "in.h": "c",
         "socket.h": "c",
-        "pthread.h": "c"
+        "pthread.h": "c",
+        "types.h": "c"
     }
 }
