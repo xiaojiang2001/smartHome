@@ -1,0 +1,40 @@
+<RCC>
+    <qresource prefix="/">
+        <file>weather/BaoXue.png</file>
+        <file>weather/BaoYu.png</file>
+        <file>weather/BaoYuDaoDaBaoYu.png</file>
+        <file>weather/DaBaoYu.png</file>
+        <file>weather/DaBaoYuDaoTeDaBaoYu.png</file>
+        <file>weather/DaDaoBaoXue.png</file>
+        <file>weather/DaDaoBaoYu.png</file>
+        <file>weather/DaXue.png</file>
+        <file>weather/DaYu.png</file>
+        <file>weather/DongYu.png</file>
+        <file>weather/DuoYun.png</file>
+        <file>weather/FuChen.png</file>
+        <file>weather/LeiZhenYu.png</file>
+        <file>weather/LeiZhenYuBanYouBingBao.png</file>
+        <file>weather/Mai.png</file>
+        <file>weather/QiangShaChenBao.png</file>
+        <file>weather/Qing.png</file>
+        <file>weather/ShaChenBao.png</file>
+        <file>weather/TeDaBaoYu.png</file>
+        <file>weather/undefined.png</file>
+        <file>weather/Wu.png</file>
+        <file>weather/XiaoDaoZhongXue.png</file>
+        <file>weather/XiaoDaoZhongYu.png</file>
+        <file>weather/XiaoXue.png</file>
+        <file>weather/XiaoYu.png</file>
+        <file>weather/Xue.png</file>
+        <file>weather/YangSha.png</file>
+        <file>weather/Yin.png</file>
+        <file>weather/Yu.png</file>
+        <file>weather/YuJiaXue.png</file>
+        <file>weather/ZhenXue.png</file>
+        <file>weather/ZhenYu.png</file>
+        <file>weather/ZhongDaoDaXue.png</file>
+        <file>weather/ZhongDaoDaYu.png</file>
+        <file>weather/ZhongXue.png</file>
+        <file>weather/ZhongYu.png</file>
+    </qresource>
+</RCC>
