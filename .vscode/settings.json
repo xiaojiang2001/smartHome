@@ -1,0 +1,23 @@
+{
+    "files.associations": {
+        "led1.h": "c",
+        "devices.h": "c",
+        "device1.h": "c",
+        "wiringpi.h": "c",
+        "stdio.h": "c",
+        "defs.h": "c",
+        "string.h": "c",
+        "device2.h": "c",
+        "device3.h": "c",
+        "command.h": "c",
+        "voicecontrol.h": "c",
+        "stdlib.h": "c",
+        "wiringserial.h": "c",
+        "socketcontrol.h": "c",
+        "unistd.h": "c",
+        "inet.h": "c",
+        "in.h": "c",
+        "socket.h": "c",
+        "pthread.h": "c"
+    }
+}
