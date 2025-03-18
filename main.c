@@ -164,24 +164,6 @@ int main()
     pthread_create(&socketThread, NULL, socket_thread, NULL);
     pthread_create(&voiceThread,  NULL, voice_thread,  NULL);
 
-    // // 去设备工厂找设备，返回设备节点
-    // struct Device* device = findDeviceByNanme(pdeviceHead, deviceName);
-    // if(device == NULL){
-    //     printf("not find\n");
-    //     return 0;
-    // }
-
-    // int cmd = 0;
-    // while (1)
-    // {
-    //     printf("please input:");
-    //     scanf("%d",&cmd);
-    //     if(1 == cmd)
-    //         device->open();
-    //     else if(0 == cmd)
-    //         device->close();
-    // }
-
     pthread_join(socketThread, NULL);
     pthread_join(voiceThread, NULL);
     return 0;
