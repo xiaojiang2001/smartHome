@@ -19,6 +19,7 @@
         "in.h": "c",
         "socket.h": "c",
         "pthread.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "pin4.h": "c"
     }
 }

@@ -7,10 +7,12 @@
 // 定义每个设备
 struct Device
 {
+    int fd;                     // 设备描述符
     char deviceName[128];       // 设备名称
     int status;                 // 开关状态
     int pinNum;                 // 硬件引脚号
     int triggerMode;            // 触发方式
+    
 
     int (*init)();              // 初始化设备
     int (*open)();              // 开灯
@@ -25,6 +27,7 @@ struct Device
 struct Device *addDevice1ToDeviceLink(struct Device *head);
 struct Device *addDevice2ToDeviceLink(struct Device *head);
 struct Device *addDevice3ToDeviceLink(struct Device *head);
+struct Device  *addPin4ToDeviceLink(struct Device *head);
 
 // 指令插入指令工厂
 
