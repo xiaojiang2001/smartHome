@@ -7,9 +7,9 @@
 
 #include "devices.h"    // 设备工厂
 #include "command.h"    // 指令工厂
-#include "device1.h"    // 1号设备
-#include "device2.h"    // 2号设备
-#include "device3.h"    // 3号设备
+#include "devicesFactory/devices/device1.h"    // 1号设备
+#include "devicesFactory/devices/device2.h"    // 2号设备
+#include "devicesFactory/devices/device3.h"    // 3号设备
 #include "voiceControl.h"       // 指令来源1
 #include "socketControl.h"      // 指令来源2
 
