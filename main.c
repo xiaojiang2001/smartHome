@@ -14,7 +14,6 @@
 #include "socketControl.h"      // 指令来源2
 
 
-
 struct Device* pdeviceHead = NULL;
 struct InputCommand* pCommandHead = NULL;
 
