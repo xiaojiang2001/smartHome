@@ -20,6 +20,10 @@
         "socket.h": "c",
         "pthread.h": "c",
         "types.h": "c",
-        "pin4.h": "c"
+        "pin4.h": "c",
+        "face.h": "c",
+        "module.h": "c",
+        "curl.h": "c",
+        "random": "c"
     }
 }

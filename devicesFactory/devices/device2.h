@@ -1,9 +1,8 @@
 #ifndef _DEVICE2_H_
 #define _DEVICE2_H_
 
-#include "devices.h"
+#include "../devices.h"
 #include <stdio.h>
-#include "defs.h" 
 #include <string.h>
 
 // 设备2硬件引脚

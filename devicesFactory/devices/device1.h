@@ -1,9 +1,8 @@
 #ifndef _DEVICE1_H_
 #define _DEVICE1_H_
 
-#include "devices.h"
+#include "../devices.h"
 #include <stdio.h>
-#include "defs.h" 
 #include <string.h>
 
 

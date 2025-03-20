@@ -40,16 +40,19 @@ int device3_init()
 	digitalWrite(device3.pinNum, !device3.triggerMode);
 
     printf("%s init success\n", device3.deviceName);
+    return 0;
 }
 
 int device3_open()
 {
     digitalWrite(device3.pinNum, device3.triggerMode);
+    return 0;
 }
 
 int device3_close()
 {
     digitalWrite(device3.pinNum, !device3.triggerMode);
+    return 0;
 }
 
 int device3_readStatue()

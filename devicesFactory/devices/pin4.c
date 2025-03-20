@@ -49,10 +49,12 @@ int pin4_open()
 {
     int cmd = pin4.triggerMode;
     write(pin4.fd, &cmd, 1);
+    return 0;
 }
 
 int pin4_close()
 {
     int cmd = !pin4.triggerMode;
     write(pin4.fd, &cmd, 1);
+    return 0;
 }

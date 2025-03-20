@@ -10,16 +10,15 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-
 struct InputCommand socketContrl = {
 	.deviceName = SOCKET_DEVICE_NAME,
-	.command = '\0',
+	.command = {'\0'},
 	.ipAddr = SOCKET_IP_ADDR,
 	.port = SOCKET_IP_PORT,
-	.log = '\0',
+	.log = {'\0'},
 	.init = socketInit,
 	.getCommand = socketGetCommand,
-	.next=NULL
+	.next = NULL
 };
 
 int socketInit(struct InputCommand *socketMes)
@@ -40,8 +39,13 @@ int socketInit(struct InputCommand *socketMes)
 	struct sockaddr_in s_addr;
 	memset(&s_addr, 0, sizeof(struct sockaddr_in));
 	s_addr.sin_family = AF_INET;
+
+	// s_addr.sin_port = htons(atoi(socketMes->port));
+	// inet_aton(socketMes->ipAddr, &(s_addr.sin_addr));
+	s_addr.sin_addr.s_addr = inet_addr(socketMes->ipAddr);  
 	s_addr.sin_port = htons(atoi(socketMes->port));
-	inet_aton(socketMes->ipAddr, &(s_addr.sin_addr));
+
+
 	if(bind(s_fd,(struct sockaddr *)&s_addr,sizeof(struct sockaddr_in)) < 0) {
 		perror("bind");
 		return -1;
@@ -70,7 +74,7 @@ int socketGetCommand(struct InputCommand *socketMes)
 	if(nread <= 0)
 		return -1;
 
-	printf("get len:%d, buf:%s\n", strlen(buf), buf);
+	printf("get len:%zu, buf:%s\n", strlen(buf), buf);
 	if(split_string(buf, socketMes->commandName, socketMes->command, '-') < 0){
 		printf("split_string error\n");
 		return -1;

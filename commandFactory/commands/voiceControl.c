@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "voiceControl.h"
 #include "wiringPi.h"
-#include "defs.h"
 #include <string.h>
 #include <stdlib.h>
 #include<wiringSerial.h>
@@ -12,8 +11,8 @@
 struct InputCommand voicer = {
      .deviceName = VOICER_DEVICE_NAME,
      .boad = VOICER_DEVICE_BOAD,
-     .command = '\0',
-     .log = '\0',
+     .command = {'\0'},
+     .log = {'\0'},
      .init = voiceInit,
      .getCommand = voiceGetCommand,
      .next = NULL

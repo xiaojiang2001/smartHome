@@ -24,6 +24,9 @@ struct InputCommand
 // 指令加入指令工厂
 struct InputCommand* addSocketContrlToInputCommandLink(struct  InputCommand *phead);
 struct InputCommand* addVoiceContrlToInputCommandLink(struct InputCommand *phead);
+struct InputCommand* addFaceContrlToInputCommandLink(struct InputCommand *phead);
+
+
 
 // 通过指令名称找到对应的指令节点
 struct InputCommand* findCommandByNanme(struct InputCommand* head, char * name);
