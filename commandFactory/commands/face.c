@@ -9,6 +9,7 @@
 #include <stdlib.h>  
 #include <string.h>  
 
+
 int faceInit(struct InputCommand *faceMes)
 {
     // 初始化
@@ -17,17 +18,37 @@ int faceInit(struct InputCommand *faceMes)
     return 0;
 }
 
-int faceGetCommand()
+int faceGetCommand(struct InputCommand *command)
 {
-    parseData(); 
-    // bool ret = postUrl();
-    // if(ret == false) {
-    //     printf("curl is null\n");
-    //     return false;
-    // }
-    return true;
+    // 获取结果
+    bool ret = postUrl();
+    if(ret == false) {
+        printf("curl is null\n");
+        return false;
+    }
+    // 解析数据
+    ret = parseData(command->log); 
+    return ret;
 }
 
+struct InputCommand faceCommand = {
+	.deviceName = FACE_DEVICE_NAME,
+	.command = "./img.jpg",
+	.log = {'\0'},
+	.init = faceInit,
+    .getCommand = faceGetCommand,
+	.next = NULL
+};
+
+// 添加设备到工厂链表
+struct InputCommand* addFaceContrlToInputCommandLink(struct InputCommand *phead)
+{
+	if(phead == NULL)
+		return &faceCommand;
+
+	faceCommand.next = phead;
+	return &faceCommand;
+}
 
 // 功能函数
 char *getBase64(char *filePath)
@@ -49,27 +70,7 @@ char *getBase64(char *filePath)
 	return bufPic;
 }
 
-
-struct InputCommand faceCommand = {
-	.deviceName = FACE_DEVICE_NAME,
-	.command = "./img.jpg",
-	.log = {'\0'},
-	.init = faceInit,
-    .getCommand = faceGetCommand,
-	.next = NULL
-};
-
-// 添加设备到工厂链表
-struct InputCommand* addFaceContrlToInputCommandLink(struct InputCommand *phead)
-{
-	if(phead == NULL)
-		return &faceCommand;
-
-	faceCommand.next = phead;
-	return &faceCommand;
-}
-
-// 解析获取到的字符串 返回识别结果
+// 解析获取到的字符串 将结果存入log
 size_t parseDataHandler(void *ptr, size_t size,size_t nmemb, void *stream)
 {
     (void)size;    // 忽略 size 参数  
@@ -78,9 +79,8 @@ size_t parseDataHandler(void *ptr, size_t size,size_t nmemb, void *stream)
 
     memset(faceCommand.log, '\0', 1024);
     strncpy(faceCommand.log, ptr, 1024); 
-    printf("--------------------------get data------------------------------\n");
-    printf("buf: %s\n", faceCommand.log); 
-
+    //printf("--------------------------get data------------------------------\n");
+    //printf("buf: %s\n", faceCommand.log); 
     return 0;
 }
 
@@ -91,7 +91,7 @@ bool postUrl()
 
     char *postString;
     
-    char *bufPic1 = getBase64("./face.jpg");
+    char *bufPic1 = getBase64(BASIC_PHOTO_PATH);
     char *bufPic2 = getBase64(faceCommand.command);
     char *key = "4tcsL5hqeR5yxH65RM1JcR";
     char *secret = "dde9c7a794604933b1ec47cfda5b3fe0";
@@ -125,12 +125,14 @@ bool postUrl()
     return true;
 }
 
-void parseData()
+bool parseData(const char *json )
 {
-    printf("in parseData");
-    // 你的 JSON 字符串  
-    const char *json = "{ \"infoList\": [ { \"veritem\": [ { \"desc\": \"判定结果\", \"content\": \"是\" }, { \"desc\": \"判定值\", \"content\": \"98.81272440944882\" } ] } ], \"messageString\": { \"status\": \"2000\", \"value\": \"成功\" } } ] }";  
- 
+    char extractedValue[32];    // 提取的字符数组 
+    bool flag1 = false;
+    bool flag2 = false;
+
+    printf("in parseData\n");
+
     // 提取 infoList  
     const char *infoListStart = strstr(json, "\"infoList\":");  
     if (infoListStart) 
@@ -140,7 +142,6 @@ void parseData()
         {  
             veritemStart += strlen("\"veritem\":");  
             const char *descStart = strstr(veritemStart, "\"desc\":");
-            printf("descStart:", %c);
               
             while (descStart) 
             {  
@@ -151,12 +152,18 @@ void parseData()
                     contentStart += strlen("\"content\":") + 1;  
 
                     // Extract values  
-                    size_t descLength = strcspn(descStart, "\"");  
+                    // size_t descLength = strcspn(descStart, "\"");  
                     size_t contentLength = strcspn(contentStart, "\"");  
 
                     // Print extracted values  
-                    printf("Description: %.*s\n", (int)descLength, descStart);  
-                    printf("Content: %.*s\n\n", (int)contentLength, contentStart);  
+                    // printf("Description: %.*s\n", (int)descLength, descStart);  
+                    // printf("Content: %.*s\n\n", (int)contentLength, contentStart); 
+                    
+                    // 使用 strncpy 提取字符串  
+                    strncpy(extractedValue, contentStart, contentLength);  
+                    extractedValue[contentLength] = '\0'; // 添加字符串结束符 
+                    if(strcmp(extractedValue, "是") == 0)
+                        flag1 = true;
                 }  
                 descStart = strstr(contentStart, "\"desc\":");  // Move to next "desc"  
             }  
@@ -175,8 +182,8 @@ void parseData()
         if (statusStart) 
         {  
             statusStart += strlen("\"status\":") + 1;  // Skip over key and quote  
-            size_t statusLength = strcspn(statusStart, "\"");  
-            printf("Status: %.*s\n", (int)statusLength, statusStart);  
+            // size_t statusLength = strcspn(statusStart, "\"");  
+            //printf("Status: %.*s\n", (int)statusLength, statusStart);  
         }  
 
         const char *valueStart = strstr(messageStart, "\"value\":");  
@@ -184,9 +191,18 @@ void parseData()
         {  
             valueStart += strlen("\"value\":") + 1;  // Skip over key and quote  
             size_t valueLength = strcspn(valueStart, "\"");  
-            printf("Value: %.*s\n", (int)valueLength, valueStart);  
+            // printf("Value: %.*s\n", (int)valueLength, valueStart);  
+
+
+            // 使用 strncpy 提取字符串  
+            strncpy(extractedValue, valueStart, valueLength);  
+            extractedValue[valueLength] = '\0'; // 添加字符串结束符 
+            if(strcmp(extractedValue, "成功") == 0)
+                flag2 = true;
         }  
     }  
     else
         printf("messageStart is null\n");
+    
+    return flag1 && flag2;
 }

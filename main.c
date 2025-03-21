@@ -18,8 +18,6 @@
 
 struct Device* pdeviceHead = NULL;
 struct InputCommand* pCommandHead = NULL;
-
-
 // 负责接收客户端消息
 void *read_thread(void* datas)
 {
@@ -61,8 +59,7 @@ void *read_thread(void* datas)
 // 接收客户端连接线程
 void* socket_thread(void* data)
 {
-    if(data == NULL)
-        printf("in socket_thread\n");
+    (void)data;
     struct InputCommand *socketHandler;
     struct sockaddr c_addr;
     socklen_t clen = sizeof(struct sockaddr_in);
@@ -95,8 +92,8 @@ void* socket_thread(void* data)
 
 void* voice_thread(void* data)
 {
-    if(data == NULL)
-        printf("in voice_thread\n");
+    (void)data;
+
     int nread = 0;
 
     // 指令工厂中的指令  找到对应的指令类型
@@ -161,35 +158,22 @@ void* face_thread(void* data)
     }
     faceHandler->init(faceHandler);
 
-    // test
-    // printf("photeing.......\n");
-    // system(buf);
-    // printf("photo successed! please waiting...\n"); 
-    // strcpy(faceHandler->command, img);
-    int ret = faceHandler->getCommand(faceHandler);   // 获取识别结果
-    if(ret == 0)
-        printf("recognize error\n");
-    else
-        printf("recognize the same person");
+/*
+	while(1)
+	{
+		printf("photeing.......\n");
+		system(buf);
+		printf("photo successed! please waiting...\n"); 
+        // 保存图片路径到结构体
+        strcpy(faceHandler->command, img);
+        int ret = faceHandler->getCommand(faceHandler);   // 获取识别结果
+        if(ret == 0)
+            printf("recognize error\n");
+        else
+            printf("recognize the same person");
+	}
+*/    
 
-	// while(1)
-	// {
-	// 	printf("photeing.......\n");
-	// 	system(buf);
-	// 	printf("photo successed! please waiting...\n"); 
-    //     // 保存图片路径到结构体
-    //     strcpy(faceHandler->command, img);
-    //     int ret = faceHandler->getCommand(faceHandler);   // 获取识别结果
-    //     if(ret == 0)
-    //         printf("recognize error\n");
-    //     else
-    //         printf("recognize the same person");
-	// }
-    while (1)
-    {
-
-    }
-    
 }
 
 int main()
@@ -199,12 +183,12 @@ int main()
         printf("wiringPiSetup error\n");
         return -1;
     }
- 
     // 设备工程初始化
     pdeviceHead = addDevice1ToDeviceLink(pdeviceHead);      // 将设备1加入设备工厂 链式存储 头插法
     pdeviceHead = addDevice2ToDeviceLink(pdeviceHead);      // 将设备2加入设备工厂 链式存储 头插法
     pdeviceHead = addDevice3ToDeviceLink(pdeviceHead);      // 将设备3加入设备工厂 链式存储 头插法
     pdeviceHead = addPin4ToDeviceLink(pdeviceHead);         // 将I/o驱动加入设备工厂 上层调用
+    
     // 指令工厂初始化
     pCommandHead = addSocketContrlToInputCommandLink(pCommandHead); //指令控制1加入指令工厂 链式存储 头插法
     pCommandHead = addVoiceContrlToInputCommandLink(pCommandHead);  //指令控制2加入指令工厂 链式存储 头插法
@@ -215,9 +199,9 @@ int main()
     pthread_t socketThread;
 	pthread_t voiceThread;
     pthread_t faceThread;
-    pthread_create(&socketThread, NULL, socket_thread, NULL);
-    pthread_create(&voiceThread,  NULL, voice_thread,  NULL);
-    pthread_create(&faceThread,   NULL, face_thread,   NULL);
+    pthread_create(&socketThread, NULL, socket_thread, &pCommandHead);
+    pthread_create(&voiceThread,  NULL, voice_thread,  &pCommandHead);
+    pthread_create(&faceThread,   NULL, face_thread,   &pCommandHead);
 
     pthread_join(socketThread, NULL);
     pthread_join(voiceThread, NULL);

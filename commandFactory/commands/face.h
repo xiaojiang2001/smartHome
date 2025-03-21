@@ -7,6 +7,7 @@ typedef unsigned int bool;
 #define false   0
 
 #define FACE_DEVICE_NAME "face"
+#define BASIC_PHOTO_PATH "./face0.jpg"
 
 struct faceCommand;  
 
@@ -14,7 +15,7 @@ bool postUrl();
 
 size_t parseDataHandler(void *ptr, size_t size,size_t nmemb, void *stream);
 
-void parseData();
+bool parseData(const char *json );
 
 // 方法
 // int faceInit(struct InputCommand *faceMes);
