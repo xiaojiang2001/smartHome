@@ -17,17 +17,23 @@
 #include "face.h"               // 指令来源3
 
 struct Device* pdeviceHead = NULL;
-struct InputCommand* pCommandHead = NULL;
+
+int queueCount = 0;
+pthread_mutex_t queueMutex;
+pthread_cond_t queueNotEmpty;
+pthread_cond_t queueNotFull;
+
 // 负责接收客户端消息
-void *read_thread(void* datas)
+void *read_thread(void* data)
 {
+    struct InputCommand* socketHandler = (struct InputCommand*)data;
+
     int nread;			// 读取到的字节数
-    struct InputCommand* socketHandler;
-    socketHandler  = (struct InputCommand*)datas;
     struct Device* device = NULL;
 
     char send_buf[128] = "test send data";
     write(socketHandler->c_fd, send_buf, strlen(send_buf));  //测试发送数据
+
     while(1)
     {
 		//接收，返回接收到的字节数放入n_read
@@ -40,12 +46,11 @@ void *read_thread(void* datas)
         if(device != NULL) 
         {
             printf("len: %zu, command:%s\n", strlen(socketHandler->command), socketHandler->command);
-
-
             if(strcmp(socketHandler->command, "open") == 0)
                 device->open();
             else if(strcmp(socketHandler->command, "close") == 0)
                 device->close();
+            else if(strcmp(sockHa))
             else
                 printf("command not exist\n");
         }
@@ -59,7 +64,8 @@ void *read_thread(void* datas)
 // 接收客户端连接线程
 void* socket_thread(void* data)
 {
-    (void)data;
+    struct InputCommand* pCommandHead = (struct InputCommand *)data;
+
     struct InputCommand *socketHandler;
     struct sockaddr c_addr;
     socklen_t clen = sizeof(struct sockaddr_in);
@@ -92,7 +98,7 @@ void* socket_thread(void* data)
 
 void* voice_thread(void* data)
 {
-    (void)data;
+    struct InputCommand* pCommandHead = (struct InputCommand *)data;
 
     int nread = 0;
 
@@ -142,8 +148,7 @@ void* voice_thread(void* data)
 
 void* face_thread(void* data)
 {
-    (void)data;
-    printf("in face_thread\n");
+    struct InputCommand* pCommandHead = (struct InputCommand *)data;
 
     char buf[128];
     char img[32] = "commandFactory/commands/img.jpg";
@@ -158,9 +163,16 @@ void* face_thread(void* data)
     }
     faceHandler->init(faceHandler);
 
-/*
 	while(1)
 	{
+        // 等待识别指令
+        pthread_mutex_lock(&queueMutex);
+        while (queueCount == 0) {
+            pthread_cond_wait(&queueNotEmpty, &queueMutex);
+        }
+        queueCount--;
+        pthread_mutex_unlock(&queueMutex);
+
 		printf("photeing.......\n");
 		system(buf);
 		printf("photo successed! please waiting...\n"); 
@@ -171,9 +183,7 @@ void* face_thread(void* data)
             printf("recognize error\n");
         else
             printf("recognize the same person");
-	}
-*/    
-
+	}   
 }
 
 int main()
@@ -183,12 +193,19 @@ int main()
         printf("wiringPiSetup error\n");
         return -1;
     }
+
+    pthread_mutex_init(&queueMutex,     NULL);
+    pthread_cond_init(&queueNotEmpty,   NULL);
+    pthread_cond_init(&queueNotFull,    NULL);
+
+
     // 设备工程初始化
     pdeviceHead = addDevice1ToDeviceLink(pdeviceHead);      // 将设备1加入设备工厂 链式存储 头插法
     pdeviceHead = addDevice2ToDeviceLink(pdeviceHead);      // 将设备2加入设备工厂 链式存储 头插法
     pdeviceHead = addDevice3ToDeviceLink(pdeviceHead);      // 将设备3加入设备工厂 链式存储 头插法
     pdeviceHead = addPin4ToDeviceLink(pdeviceHead);         // 将I/o驱动加入设备工厂 上层调用
     
+    struct InputCommand* pCommandHead = NULL;
     // 指令工厂初始化
     pCommandHead = addSocketContrlToInputCommandLink(pCommandHead); //指令控制1加入指令工厂 链式存储 头插法
     pCommandHead = addVoiceContrlToInputCommandLink(pCommandHead);  //指令控制2加入指令工厂 链式存储 头插法
@@ -199,12 +216,16 @@ int main()
     pthread_t socketThread;
 	pthread_t voiceThread;
     pthread_t faceThread;
-    pthread_create(&socketThread, NULL, socket_thread, &pCommandHead);
-    pthread_create(&voiceThread,  NULL, voice_thread,  &pCommandHead);
-    pthread_create(&faceThread,   NULL, face_thread,   &pCommandHead);
+    pthread_create(&socketThread, NULL, socket_thread, (void *)pCommandHead);
+    pthread_create(&voiceThread,  NULL, voice_thread,  (void *)pCommandHead);
+    pthread_create(&faceThread,   NULL, face_thread,   (void *)pCommandHead);
 
     pthread_join(socketThread, NULL);
     pthread_join(voiceThread, NULL);
+
+    pthread_mutex_destroy(&queueMutex);
+    pthread_cond_destroy(&queueNotEmpty);
+    pthread_cond_destroy(&queueNotFull);
+
     return 0;
-    // 线程池创建
 }
