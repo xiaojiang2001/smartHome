@@ -50,9 +50,9 @@ void *read_thread(void* data)
                 device->open();
             else if(strcmp(socketHandler->command, "close") == 0)
                 device->close();
-            else if(strcmp(sockHa))
-            else
-                printf("command not exist\n");
+            // else if(strcmp(sockHa))
+            // else
+            //     printf("command not exist\n");
         }
         else
             printf("device not exist\n");
