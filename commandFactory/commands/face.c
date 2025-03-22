@@ -51,11 +51,11 @@ struct InputCommand* addFaceContrlToInputCommandLink(struct InputCommand *phead)
 }
 
 // 功能函数
-char *getBase64(char *filePath)
+char *getBase64(char *fileName)
 {
 	char *bufPic;
 	char cmd[128]={'\0'};
-	sprintf(cmd,"base64 %s > tempFile", filePath);
+	sprintf(cmd,"base64 %s > tempFile", fileName);
 	system(cmd);
 
 	int fd = open("./tempFile", O_RDWR);
@@ -67,7 +67,7 @@ char *getBase64(char *filePath)
     close(fd);	
 
 	system("rm -f tempFile");
-	return bufPic;
+	return "123";
 }
 
 // 解析获取到的字符串 将结果存入log
@@ -90,15 +90,21 @@ bool postUrl()
     CURLcode res;
 
     char *postString;
-    
-    char *bufPic1 = getBase64(BASIC_PHOTO_PATH);
-    char *bufPic2 = getBase64(faceCommand.command);
-    char *key = "4tcsL5hqeR5yxH65RM1JcR";
-    char *secret = "dde9c7a794604933b1ec47cfda5b3fe0";
-    int typeId = 21;
-    char *format = "json";
+    char path[256];
+    memset(path, '\0', 256);
+    sprintf(path, "%s%s", BASIC_PATH, PHOTO_PATH);
+    char *bufPic1 = getBase64(path);
 
-    int len = strlen(key)+strlen(secret)+strlen(bufPic1)+strlen(bufPic2)+128;	
+    memset(path, '\0', 256);
+    sprintf(path, "%s%s", BASIC_PATH, faceCommand.command);
+    char *bufPic2 = getBase64(path);
+
+    char *key = KEY;
+    char *secret = SECRET;
+    int typeId = TYPEID;
+    char *format = FORMAT;
+
+    int len = strlen(key)+strlen(secret)+strlen(bufPic1)+strlen(bufPic2) + 128;	
     postString = (char *)malloc(len);
     memset(postString, '\0', len);
 
@@ -130,8 +136,6 @@ bool parseData(const char *json )
     char extractedValue[32];    // 提取的字符数组 
     bool flag1 = false;
     bool flag2 = false;
-
-    printf("in parseData\n");
 
     // 提取 infoList  
     const char *infoListStart = strstr(json, "\"infoList\":");  
@@ -168,11 +172,7 @@ bool parseData(const char *json )
                 descStart = strstr(contentStart, "\"desc\":");  // Move to next "desc"  
             }  
         }  
-        else
-            printf("veritemStart is null\n"); 
     }  
-    else
-        printf("infoListStart is null\n");
 
     // 提取 messageString  
     const char *messageStart = strstr(json, "\"messageString\":");  
@@ -200,9 +200,6 @@ bool parseData(const char *json )
             if(strcmp(extractedValue, "成功") == 0)
                 flag2 = true;
         }  
-    }  
-    else
-        printf("messageStart is null\n");
-    
+    }   
     return flag1 && flag2;
 }

@@ -8,6 +8,7 @@ struct InputCommand
 {
     int fd;                 // 服务器/普通文件描述符
     int c_fd;               // 客户端文件描述符
+    int epoll_fd;           // epoll描述符
     char commandName[32];   // 指令名称
     char deviceName[32];    // 设备名称
     int boad;               // 硬件波特率

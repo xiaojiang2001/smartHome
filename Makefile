@@ -3,7 +3,7 @@ CC = gcc
 
 # 编译选项
 # 编译选项
-CFLAGS = -Wall -Wextra -std=c99 -pthread -I./lib/libcurl/__install/include -I$(SRC_DIR) -I$(DEVICE_DIR) -I$(COMMAND_DIR) -IcommandFactory -IdevicesFactory
+CFLAGS = -Wall -Wextra -std=c99 -pthread -I./lib/libcurl/__install/include -I$(SRC_DIR) -I$(DEVICE_DIR) -I$(COMMAND_DIR) -IcontrolPthread -IcommandFactory -IdevicesFactory
 
 # 目标文件
 TARGET = smartHome
@@ -18,7 +18,8 @@ SRCS = 	$(wildcard $(SRC_DIR)/*.c) 		\
        	$(wildcard $(DEVICE_DIR)/*.c) 	\
        	$(wildcard $(COMMAND_DIR)/*.c)	\
 		$(wildcard commandFactory/*.c) 	\
-	    $(wildcard devicesFactory/*.c) 
+	    $(wildcard devicesFactory/*.c)  \
+		$(wildcard controlPthread/*.c)
 
 # 对象文件列表
 OBJS = $(SRCS:.c=.o)
@@ -28,7 +29,8 @@ INCS = $(wildcard $(SRC_DIR)/*.h) 		\
 	   $(wildcard $(DEVICE_DIR)/*.h) 	\
        $(wildcard $(COMMAND_DIR)/*.h) 	\
        $(wildcard commandFactory/*.h) 	\
-	   $(wildcard devicesFactory/*.h) 
+	   $(wildcard devicesFactory/*.h)  	\
+	   $(wildcard controlPthread/*.h)
 	   
 # 库文件路径
 LIBS = -L./lib/libcurl/__install/lib -lcurl -lwiringPi

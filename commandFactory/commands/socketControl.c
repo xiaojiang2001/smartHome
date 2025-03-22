@@ -9,6 +9,8 @@
 #include <sys/types.h>         
 #include <sys/socket.h>
 #include <unistd.h>
+#include <sys/epoll.h>
+#include <fcntl.h>
 
 struct InputCommand socketContrl = {
 	.deviceName = SOCKET_DEVICE_NAME,
@@ -27,8 +29,12 @@ int socketInit(struct InputCommand *socketMes)
 	int s_fd = socket(AF_INET,SOCK_STREAM, 0);
 	if(s_fd == -1) {
 		perror("socket");
-		return -1;
+		exit(EXIT_FAILURE);
 	}
+	socketMes->fd = s_fd;
+
+	// 设置监听套接字为非阻塞模式
+    setnonblocking(s_fd);
 
 	//设置套接字属性 允许地址重用
     int optval = 1;
@@ -39,26 +45,46 @@ int socketInit(struct InputCommand *socketMes)
 	struct sockaddr_in s_addr;
 	memset(&s_addr, 0, sizeof(struct sockaddr_in));
 	s_addr.sin_family = AF_INET;
-
 	// s_addr.sin_port = htons(atoi(socketMes->port));
 	// inet_aton(socketMes->ipAddr, &(s_addr.sin_addr));
 	s_addr.sin_addr.s_addr = inet_addr(socketMes->ipAddr);  
 	s_addr.sin_port = htons(atoi(socketMes->port));
-
-
-	if(bind(s_fd,(struct sockaddr *)&s_addr,sizeof(struct sockaddr_in)) < 0) {
-		perror("bind");
-		return -1;
+	if(bind(s_fd, (struct sockaddr *)&s_addr, sizeof(struct sockaddr_in)) < 0) {
+        perror("bind");
+        close(s_fd);
+        exit(EXIT_FAILURE);
 	}
 		
-
 	//3.listen
-	if(listen(s_fd, 10) < 0) {
-		perror("bind");
-		return -1;
-	}
-	
+    // 监听
+    if (listen(s_fd, SOMAXCONN) == -1) {
+        perror("listen");
+        close(s_fd);
+        exit(EXIT_FAILURE);
+    }
+
+   	// 创建epoll实例
+    int epoll_fd = epoll_create1(0);
+    if (epoll_fd == -1) {
+        perror("epoll_create1");
+        close(s_fd);
+        exit(EXIT_FAILURE);
+    }
+
+	// 将监听套接字添加到epoll实例中
+	struct epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.fd = s_fd;
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, s_fd, &ev) == -1) {
+        perror("epoll_ctl: listen_sock");
+        close(s_fd);
+        close(epoll_fd);
+        exit(EXIT_FAILURE);
+    }
+	socketMes->epoll_fd = epoll_fd;
 	socketMes->fd = s_fd;
+	socketMes->getCommand = socketGetCommand;
+	
 	return s_fd;
 }
 
@@ -92,3 +118,18 @@ struct InputCommand* addSocketContrlToInputCommandLink(struct InputCommand *phea
 	return &socketContrl;
 }
 
+
+// 设置套接字为非阻塞模式
+int setnonblocking(int fd) {
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1) {
+        perror("fcntl F_GETFL");
+        return -1;
+    }
+    flags |= O_NONBLOCK;
+    if (fcntl(fd, F_SETFL, flags) == -1) {
+        perror("fcntl F_SETFL");
+        return -1;
+    }
+    return 0;
+}
