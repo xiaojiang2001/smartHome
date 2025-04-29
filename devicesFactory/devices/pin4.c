@@ -30,11 +30,20 @@ int pin4_init()
 {
     // 成员属性初始化
     strcpy(pin4.deviceName, PIN4_NAME);
-    pin4.status = !PIN4_TRIGGER_MODE,
-    pin4.triggerMode = PIN4_TRIGGER_MODE,
+    pin4.status = !PIN4_TRIGGER_MODE;
+    pin4.triggerMode = PIN4_TRIGGER_MODE;
+
+    // 初始化互斥锁
+    if (pthread_mutex_init(&pin4.ioLock, NULL) != 0) {
+        perror("Mutex init failed");
+        return -1;
+    }
+
 
     // I/O端口初始化 这里调用自己加载的pin4 I/O模块设备
+    pthread_mutex_lock(&pin4.ioLock);  
     pin4.fd = open("/dev/pin4",O_RDWR);
+    pthread_mutex_unlock(&pin4.ioLock);  
     if(pin4.fd  < 0){
         printf("open error\n");
         perror("reason:");
@@ -48,13 +57,17 @@ int pin4_init()
 int pin4_open()
 {
     int cmd = pin4.triggerMode;
+    pthread_mutex_lock(&pin4.ioLock);  
     write(pin4.fd, &cmd, 1);
+    pthread_mutex_unlock(&pin4.ioLock);  
     return 0;
 }
 
 int pin4_close()
 {
     int cmd = !pin4.triggerMode;
+    pthread_mutex_lock(&pin4.ioLock);  
     write(pin4.fd, &cmd, 1);
+    pthread_mutex_unlock(&pin4.ioLock);  
     return 0;
 }

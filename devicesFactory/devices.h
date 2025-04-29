@@ -1,6 +1,7 @@
 #ifndef _DEVICE_H_
 #define _DEVICE_H_
 #include "wiringPi.h"
+#include <pthread.h>
 
 // 设备工厂
 
@@ -20,6 +21,7 @@ struct Device
     int (*readStatus)();        // 获取设备状态
     void (*setStatus)(int status);    // 设置状态
     
+    pthread_mutex_t ioLock;     // IO操作互斥锁
     struct Device* next;        // next指针
 };
 

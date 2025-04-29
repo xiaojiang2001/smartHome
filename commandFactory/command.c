@@ -18,7 +18,7 @@ struct InputCommand* findCommandByNanme(struct InputCommand* head, char * name)
     return NULL;
 }
 
-// 分割收到的内容为设备+指令
+// 分割收到的内容为设备+指令 device1-open
 int split_string(const char *input, char *part1, char *part2, const char delimiter) {  
     // 查找分隔符的位置  
     const char *delimiter_ptr = strchr(input, delimiter);  

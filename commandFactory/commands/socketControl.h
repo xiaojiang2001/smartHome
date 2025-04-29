@@ -2,8 +2,8 @@
 #define _SOCKETCONTROL_H_
 
 // 自定义设备IP地址与端口号
-#define SOCKET_IP_ADDR 	"192.168.10.203"
-#define SOCKET_IP_PORT 	"8082"
+#define SOCKET_IP_ADDR 	"192.168.1.146"
+#define SOCKET_IP_PORT 	"8080"
 
 
 #define MAX_EVENTS 10

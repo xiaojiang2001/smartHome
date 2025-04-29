@@ -6,6 +6,7 @@
 #include <stdlib.h>  
 #include <sys/epoll.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 #include "devices.h"    // 设备工厂
 #include "command.h"    // 指令工厂
@@ -89,7 +90,7 @@ void* socket_thread(void* data)
     for (int i = 0; i < MAX_THREADS; i++) {
         pthread_create(&workers[i], NULL, worker, pool);
     }
-
+    
     while (1) 
     {
         // 等待事件发生
@@ -103,7 +104,8 @@ void* socket_thread(void* data)
         for (int i = 0; i < nfds; i++) 
         {
             // 处理监听套接字事件
-            if (events[i].data.fd == socketHandler->fd) {
+            if (events[i].data.fd == socketHandler->fd) 
+            {
                 // 处理新的连接请求
                 struct sockaddr_in client_addr;
                 socklen_t client_len = sizeof(client_addr);
@@ -111,6 +113,14 @@ void* socket_thread(void* data)
                 if (conn_fd == -1) {
                     perror("accept");
                     continue;
+                }
+                // 打印新的连接信息
+                char client_ip[INET_ADDRSTRLEN];
+                if (inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN) != NULL) {
+                    printf("New connection from %s:%d on socket %d\n", client_ip, ntohs(client_addr.sin_port), conn_fd);
+                }
+                else {
+                    perror("inet_ntop");
                 }
 
                 // 设置新连接的套接字为非阻塞模式
@@ -128,8 +138,8 @@ void* socket_thread(void* data)
             } 
             // 处理已连接的套接字上的数据
             else if (events[i].events & EPOLLIN) {
-                int conn_fd = events[i].data.fd;
-                enqueue(pool, conn_fd, socketHandler);
+                int conn_fd = events[i].data.fd;        // 获取已连接的套接字
+                enqueue(pool, conn_fd, socketHandler);  // 添加任务
             }
         }
     }
