@@ -12,20 +12,24 @@ typedef struct {
 } ClientTask;               // 客户端任务结构体
 
 typedef struct {
-    ClientTask* tasks;      // 任务队列
-    int front;              // 队首指针
-    int rear;               // 队尾指针
-    int count;              // 当前队列中任务数量
-    int size;               // 队列最大长度
-    pthread_mutex_t lock;   // 互斥锁
+    ClientTask* tasks;          // 任务队列
+    int front;                  // 队首指针
+    int rear;                   // 队尾指针
+    int count;                  // 当前队列中任务数量
+    int size;                   // 队列最大长度
+    pthread_mutex_t lock;       // 互斥锁
     pthread_cond_t notEmpty;    // 条件变量
     pthread_cond_t notFull;     // 条件变量
+    int is_running; 			// 控制线程池运行状态
 } ThreadPool;                   // 线程池结构体
 
 ThreadPool* createThreadPool(int size);         // 创建线程池
-void destroyThreadPool(ThreadPool* pool);       // 销毁线程池
+void destroyThreadPool(ThreadPool* pool);   // 销毁线程池
 void enqueue(ThreadPool* pool, int c_fd, struct InputCommand* socketHandler);   // 入队
 ClientTask dequeue(ThreadPool* pool);           // 出队
 void* worker(void* arg);
+
+void stopThreadPool(ThreadPool* pool);      // 停止线程池
+void clearThreadPool(ThreadPool* pool);     // 清空线程池
 
 #endif // THREAD_POOL_H
