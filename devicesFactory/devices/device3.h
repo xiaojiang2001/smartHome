@@ -7,7 +7,7 @@
 
 
 // 设备3硬件引脚
-#define DEVICE3_PIN_NUM 25
+#define DEVICE3_PIN_NUM 2
 // 设备3触发方式
 #define DEVICE3_TRIGGER_MODE HIGH
 // 设备3软件名称

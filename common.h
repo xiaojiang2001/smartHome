@@ -2,7 +2,7 @@
 #define COMMON_H
 
 #include <pthread.h>
-#include "devices.h"
+#include "devicesFactory/devices.h"
 
 
 extern int faceCnt;

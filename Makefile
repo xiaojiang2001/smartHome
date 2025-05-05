@@ -1,53 +1,60 @@
 # 编译器
-CC = gcc
+CC := aarch64-linux-gnu-gcc
 
-# 编译选项
-# 编译选项
-CFLAGS = -Wall -Wextra -std=c99 -pthread -I./lib/libcurl/__install/include -I$(SRC_DIR) -I$(DEVICE_DIR) -I$(COMMAND_DIR) -IcontrolPthread -IcommandFactory -IdevicesFactory
+# 源文件与目标文件
+SRC := main.c common.c 	\
+		$(wildcard commandFactory/*.c)				\
+		$(wildcard commandFactory/commands/*.c)		\
+		$(wildcard devicesFactory/*.c)				\
+		$(wildcard devicesFactory/devices/*.c)		\
+		$(wildcard controlPthread/*.c)				\
 
-# 目标文件
-TARGET = smartHome
+OBJ := $(SRC:.c=.o)
+TARGET := a.out
 
-# 源文件和头文件路径
-SRC_DIR = .
-DEVICE_DIR = devicesFactory/devices
-COMMAND_DIR = commandFactory/commands
+# 头文件包含路径
+INC_DIRS := 					\
+	-I ./						\
+	-I ./devicesFactory			\
+	-I ./devicesFactory/devices	\
+	-I ./commandFactory			\
+	-I ./commandFactory/commands	\
+	-I ./controlPthread			\
+    -I ./local/include 			\
+	-I ./3rd/usr/local/include 	\
+    -I ./3rd/usr/include				\
+	-I ./3rd/usr/include/aarch64-linux-gnu
 
-# 源文件列表
-SRCS = 	$(wildcard $(SRC_DIR)/*.c) 		\
-       	$(wildcard $(DEVICE_DIR)/*.c) 	\
-       	$(wildcard $(COMMAND_DIR)/*.c)	\
-		$(wildcard commandFactory/*.c) 	\
-	    $(wildcard devicesFactory/*.c)  \
-		$(wildcard controlPthread/*.c)
+# 库文件链接路径
+LIB_DIRS := \
+    -L./local/lib \
+    -L./3rd/aarch64-linux-gnu/lib \
+    -L./3rd/usr/lib					\
+	-L./3rd/usr/local/lib 			\
+	-L./3rd/lib/aarch64-linux-gnu 	\
+	-L./3rd/usr/lib/aarch64-linux-gnu
 
-# 对象文件列表
-OBJS = $(SRCS:.c=.o)
 
-# 头文件列表
-INCS = $(wildcard $(SRC_DIR)/*.h) 		\
-	   $(wildcard $(DEVICE_DIR)/*.h) 	\
-       $(wildcard $(COMMAND_DIR)/*.h) 	\
-       $(wildcard commandFactory/*.h) 	\
-	   $(wildcard devicesFactory/*.h)  	\
-	   $(wildcard controlPthread/*.h)
-	   
-# 库文件路径
-LIBS = -L./lib/libcurl/__install/lib -lcurl -lwiringPi
-# LIBS = -I ./lib/libcurl/__install/include -L ./lib/libcurl/__install/lib -lcurl -lwiringPi  
+# 链接库
+LIBS := -lwiringPi  -pthread -lexpat -lz -lcrypt
+
+# 编译参数
+CFLAGS := -Wall -Wextra -O2 $(INC_DIRS)
+
+# 链接参数
+LDFLAGS := $(LIB_DIRS) $(LIBS)
 
 # 默认目标
 all: $(TARGET)
 
-# 链接目标文件生成可执行文件
-$(TARGET): $(OBJS)
-	@$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+# 生成目标程序
+$(TARGET): $(OBJ)
+	$(CC) $^ $(LDFLAGS) -o $@
 
-# 编译源文件生成目标文件
-%.o: %.c $(INCS)
-	@$(CC) $(CFLAGS) -c $< -o $@
+# 编译源文件为对象文件
+$(OBJ): %.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# 清理生成的文件
+# 清理中间文件和可执行文件
 clean:
-	@echo "Cleaning up object files and the target executable..."
-	@rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJ) $(TARGET)

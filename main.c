@@ -24,7 +24,7 @@ int main()
     // 指令工厂初始化
     struct InputCommand* pCommandHead = NULL;
     pCommandHead = addSocketContrlToInputCommandLink(pCommandHead); //指令控制1加入指令工厂 链式存储 头插法
-    pCommandHead = addVoiceContrlToInputCommandLink(pCommandHead);  //指令控制2加入指令工厂 链式存储 头插法
+    // pCommandHead = addVoiceContrlToInputCommandLink(pCommandHead);  //指令控制2加入指令工厂 链式存储 头插法
     pCommandHead = addFaceContrlToInputCommandLink(pCommandHead);   
 
     // 进程变量
@@ -38,6 +38,5 @@ int main()
     pthread_join(socketThread, NULL);
     pthread_join(faceThread, NULL);
     pthread_join(voiceThread, NULL);
-
     return 0;
 }

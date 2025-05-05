@@ -3,7 +3,6 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
-
 #include "common.h"     
 #include "command.h"            // 指令工厂
 #include "face.h"               // 指令来源3

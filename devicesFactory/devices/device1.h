@@ -7,7 +7,7 @@
 
 
 // 设备1硬件引脚
-#define DEVICE1_PIN_NUM 23
+#define DEVICE1_PIN_NUM 0
 // 设备1触发方式
 #define DEVICE1_TRIGGER_MODE HIGH
 // 设备1软件名称

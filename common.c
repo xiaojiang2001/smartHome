@@ -1,5 +1,4 @@
 #include "common.h"
-#include "devices.h"
 
 int faceCnt = 0;
 pthread_mutex_t faceMutex;

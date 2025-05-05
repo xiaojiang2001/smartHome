@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <curl/curl.h>
+// #include <curl/curl.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -13,7 +13,7 @@
 int faceInit(struct InputCommand *faceMes)
 {
     // 初始化
-    curl_global_init(CURL_GLOBAL_DEFAULT);       // 主线程调用一次
+    // curl_global_init(CURL_GLOBAL_DEFAULT);       // 主线程调用一次
     strcpy(faceMes->command, "./img.jpg");
     return 0;
 }
@@ -86,6 +86,7 @@ size_t parseDataHandler(void *ptr, size_t size,size_t nmemb, void *stream)
 
 bool postUrl()
 {
+/*
     CURL *curl;
     CURLcode res;
 
@@ -127,7 +128,7 @@ bool postUrl()
     }
 
     curl_easy_cleanup(curl);
-
+*/
     return true;
 }
 

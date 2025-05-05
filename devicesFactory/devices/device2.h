@@ -6,7 +6,7 @@
 #include <string.h>
 
 // 设备2硬件引脚
-#define DEVICE2_PIN_NUM         24
+#define DEVICE2_PIN_NUM         1
 // 设备2触发方式
 #define DEVICE2_TRIGGER_MODE    HIGH
 // 设备2软件名称

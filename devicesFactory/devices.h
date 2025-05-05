@@ -1,6 +1,6 @@
 #ifndef _DEVICE_H_
 #define _DEVICE_H_
-#include "wiringPi.h"
+#include <wiringPi.h>
 #include <pthread.h>
 
 // 设备工厂
