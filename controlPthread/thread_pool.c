@@ -89,6 +89,7 @@ void stopThreadPool(ThreadPool* pool) {
     pthread_cond_broadcast(&pool->notEmpty);  // 唤醒所有等待的线程
     pthread_cond_broadcast(&pool->notFull);   // 唤醒所有等待的线程
     pthread_mutex_unlock(&pool->lock);
+    printf("Thread pool stopped.\n");
 }
 
 // 清空线程池
@@ -98,4 +99,5 @@ void clearThreadPool(ThreadPool* pool) {
     pool->rear = 0;
     pool->count = 0;
     pthread_mutex_unlock(&pool->lock);
+    printf("Thread pool cleared.\n");
 }

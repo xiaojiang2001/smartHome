@@ -8,6 +8,10 @@
 #include "face.h"               // 指令来源3
 #include "socketControl.h"
 #include "thread_pool.h"
+#include "signal.h"
+
+
+extern volatile sig_atomic_t is_running;  // 控制线程池运行状态
 
 void* face_thread(void* data)
 {
@@ -26,7 +30,7 @@ void* face_thread(void* data)
     }
     faceHandler->init(faceHandler);
 
-	while(1)
+	while(is_running)
 	{
         // 等待识别指令
         pthread_mutex_lock(&faceMutex);

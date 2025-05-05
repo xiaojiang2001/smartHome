@@ -7,13 +7,15 @@
 #include <sys/epoll.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
-#include "devices.h"    // 设备工厂
-#include "command.h"    // 指令工厂
-#include "socketControl.h"      // 指令来源1
+#include "devices.h"        // 设备工厂
+#include "command.h"        // 指令工厂
+#include "socketControl.h"  // 指令来源1
 #include "thread_pool.h"
 #include "common.h"
 
+extern volatile sig_atomic_t is_running;  // 控制线程池运行状态
 void handle_client_message(int c_fd, struct InputCommand* socketHandler) {
     int nread;
     char buf[64] = {'\0'};
@@ -33,8 +35,11 @@ void handle_client_message(int c_fd, struct InputCommand* socketHandler) {
     }
 
     printf("get len:%zu, buf:%s\n", strlen(buf), buf);
-    write(c_fd, buf, strlen(buf));        // 给客户端发送测试       
-
+     // 给客户端发送测试  
+    if(write(c_fd, buf, strlen(buf)) < 0) {
+        printf("write error\n");
+    }       
+    
     if (split_string(buf, socketHandler->commandName, socketHandler->command, '-') < 0) {
         printf("split_string error\n");
         return;
@@ -91,7 +96,7 @@ void* socket_thread(void* data)
         pthread_create(&workers[i], NULL, worker, pool);
     }
     
-    while (1) 
+    while (is_running) 
     {
         // 等待事件发生
         int nfds = epoll_wait(socketHandler->epoll_fd, events, MAX_EVENTS, -1);
@@ -143,6 +148,19 @@ void* socket_thread(void* data)
             }
         }
     }
+
+    // 停止线程池
+    stopThreadPool(pool);
+
+    // 清空任务队列
+    clearThreadPool(pool);
+
+   // 等待所有工作线程退出
+    for (int i = 0; i < MAX_THREADS; i++) {
+        pthread_join(workers[i], NULL);
+    }
+    // 销毁线程池
+    destroyThreadPool(pool);
 
     close(socketHandler->fd);
     close(socketHandler->epoll_fd);

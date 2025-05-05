@@ -6,6 +6,10 @@
 #include "command.h"    // 指令工厂
 #include "common.h"
 #include "voiceControl.h"       // 指令来源2
+#include <signal.h>
+
+
+extern volatile sig_atomic_t is_running;  // 控制线程池运行状态
 
 void* voice_thread(void* data)
 {
@@ -32,7 +36,7 @@ void* voice_thread(void* data)
     write(voiceHandler->fd, send_buf, strlen(send_buf));  
     
     struct Device *device = NULL;               // 设备工厂中的设备
-    while (1)
+    while (is_running)
     {
         while(serialDataAvail(voiceHandler->fd) != -1 ) // 串口有数据
         {
